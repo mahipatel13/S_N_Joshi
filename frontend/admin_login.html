@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login</title>
-    <!-- CSS -->
     <link rel="stylesheet" href="/static/css/style.css" />
     <style>
         .login-wrap {
@@ -30,7 +28,6 @@
             font-size: 52px;
             font-weight: 700;
             line-height: 1.05;
-            text-shadow: none;
             letter-spacing: 0.5px;
         }
 
@@ -39,7 +36,6 @@
             font-size: 36px;
             font-weight: 500;
             margin-top: 6px;
-            text-shadow: none;
         }
 
         .form {
@@ -76,9 +72,7 @@
         }
     </style>
 </head>
-
 <body>
-
     <div class="login-wrap">
         <div class="login-brand">
             <h1>S. N. Joshi. Mess</h1>
@@ -87,8 +81,7 @@
 
         <form class="form" method="POST" action="/adminlogin">
             <p class="form-title">Sign in to admin account</p>
-            
-            <!-- Phone Number input -->
+
             <div class="input-container">
                 <input
                     type="tel"
@@ -103,12 +96,10 @@
                 />
             </div>
 
-            <!-- Password input -->
             <div class="input-container">
                 <input type="password" name="password" placeholder="Enter Password" required />
             </div>
 
-            <!-- Submit button -->
             <button type="submit" class="submit">Sign in</button>
         </form>
     </div>
@@ -119,15 +110,7 @@
             phoneInput.addEventListener("input", function () {
                 this.value = this.value.replace(/\D/g, "").slice(0, 10);
             });
-            phoneInput.addEventListener("blur", function () {
-                if (this.value.length > 0 && this.value.length !== 10) {
-                    this.setCustomValidity("Phone number must be exactly 10 digits");
-                } else {
-                    this.setCustomValidity("");
-                }
-            });
         }
     </script>
 </body>
-
 </html>
