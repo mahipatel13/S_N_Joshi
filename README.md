@@ -1,30 +1,21 @@
-<<<<<<< HEAD
 # S. N. Joshi. Mess - Admin System
 ## Refactored & Customized Version
 
 ### What's New ✨
 
-1. **Admin-Only Functionality** - Removed all student, faculty, and non-hostel user interfaces
-2. **Single Session Login** - Only one admin can login at a time. Previous session auto-logs out
-3. **Custom Branding** - All pages display "S. N. Joshi. Mess"
-4. **Port Changed to 8080** - Changed from port 5000 to 8080 for better compatibility
-5. **Three Core Features**:
-   - **Menu Management** - Add, Update, Delete breakfast, lunch, dinner menus
-   - **Grocery & Vegetable Tracker** - Track purchases and usage
-   - **Raw Material Management** - Manage groceries and vegetables efficiently
-
-### Admin Credentials
-
-**Phone:** `7862017545`  
-**Password:** (Your existing password)
+1. **Single Session Login** - Only one admin can login at a time. Previous session auto-logs out
+2. **Three Core Features**:
+3. **Menu Management** - Add, Update, Delete breakfast, lunch, dinner menus
+4. **Grocery & Vegetable Tracker** - Track purchases and usage
+5. **Raw Material Management** - Manage groceries and vegetables efficiently
 
 ### How to Run
 
 1. **Open Terminal/Command Prompt** in the project directory
 2. **Run the Flask app:**
-   ```bash
+
    python main.py
-   ```
+   
 
 3. **Access the application:**
    - Open your browser and go to: `http://localhost:8080`
@@ -37,7 +28,7 @@
 - **Update Menu** - Modify existing menus
 - **Delete Menu** - Remove outdated menus
 - **View Weekly Menu** - See complete week's menu
-- **Download PDF** - Export menus as PDF
+- **Download PDF/Excel** - Export menus as PDF/Excel
 
 #### 2. Grocery & Vegetable Management (`/g_v`)
 - **Add Entry** - Record grocery and vegetable purchases
@@ -57,13 +48,6 @@
 ✓ Auto-logout on duplicate login attempts  
 ✓ Secure database connection  
 
-### Important Notes
-
-1. **Database**: Ensure MySQL is running with `track_serve` database
-2. **Port 8080**: Make sure port 8080 is not being used by another application
-3. **Environment**: Works with Python 3.7+ with virtual environment
-4. **Browser**: Works on all modern browsers (Chrome, Firefox, Safari, Edge)
-
 ### Troubleshooting
 
 **Problem:** "Port 8080 already in use"
@@ -71,18 +55,6 @@
 
 **Problem:** "Connection refused"
 - **Solution:** Ensure MySQL is running: `mysql -u root -p` (should work)
-
-**Problem:** "Admin login shows error"
-- **Solution:** Verify admin exists in database with credentials: Phone `7862017545`
-
-### Database Setup
-
-If you need to add another admin:
-
-```sql
-INSERT INTO admin (fullname, phone_no, email_id, password) 
-VALUES ('Admin Name', '9876543210', 'email@example.com', 'password123');
-```
 
 ### File Structure
 
@@ -115,9 +87,8 @@ For issues or questions, check:
 
 ---
 
-**Version:** 2.0 (Refactored for Admin Only)  
+**Version:** 1.0  
 **Last Updated:** February 2026  
 **Customized for:** S. N. Joshi. Mess
 =======
 # S_N_Joshi
->>>>>>> 5a3a1b19325f174d40f9a584d4e56117772f7348
