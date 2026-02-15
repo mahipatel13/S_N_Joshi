@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # S. N. Joshi. Mess - Admin System
 ## Refactored & Customized Version
 
@@ -117,3 +118,6 @@ For issues or questions, check:
 **Version:** 2.0 (Refactored for Admin Only)  
 **Last Updated:** February 2026  
 **Customized for:** S. N. Joshi. Mess
+=======
+# S_N_Joshi
+>>>>>>> 5a3a1b19325f174d40f9a584d4e56117772f7348
