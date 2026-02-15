@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery & Vegetable Report</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css') }}">
+  <style>
+    .search-wrap {
+      max-width: 560px;
+      margin: 0 auto 18px;
+    }
+
+    .table-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      text-align: left;
+      color: #1f2937;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="admin-ui-body">
+  <div class="page-shell" id="report-content">
+    <div class="hero">
+      <h1>Grocery & Vegetable Report</h1>
+      <p>Search, review and export operational records</p>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="searchBox" class="form-control-modern" placeholder="Search in report...">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-pill" onclick="downloadPDF()">Download Report as PDF</button>
+      <a href="/download_gv_excel" class="btn-pill blue">Download Report as Excel</a>
+      <a href="/admin_dashboard" class="btn-pill gray">Back to Dashboard</a>
+    </div>
+
+    {% for (date, meal), items in grouped_data.items() %}
+    <section class="panel panel-pad" style="margin-top: 14px;">
+      <h3 class="table-title">{{ meal|capitalize }} - {{ date }} ({{ items[0].day }})</h3>
+      <div class="table-shell">
+        <table class="table-modern search-table">
+          <thead>
+            <tr>
+              <th>Menu</th>
+              <th>Person</th>
+              <th>Grocery</th>
+              <th>Vegetable</th>
+              <th>Khana Bacha</th>
+              <th>Khana Ghata</th>
+              <th>Remark</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in items %}
+            <tr>
+              <td>{{ row.menu_item }}</td>
+              <td>{{ row.person }}</td>
+              <td>{{ row.grocery }}</td>
+              <td>{{ row.vegetable }}</td>
+              <td>{{ row.khanabcha }}</td>
+              <td>{{ row.khanaghata }}</td>
+              <td>{{ row.remark }}</td>
+              <td>
+                <form method="POST" action="/delete_gv_row" onsubmit="return confirm('Are you sure you want to delete this row?');">
+                  <input type="hidden" name="id" value="{{ row.id }}">
+                  <input type="hidden" name="table" value="{{ row.table_name }}">
+                  <button type="submit" class="btn-pill danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% else %}
+    <div class="panel panel-pad">
+      <p class="muted-note">No data available to display.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <script>
+    document.getElementById("searchBox").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const rows = document.querySelectorAll(".search-table tbody tr");
+      rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(query) ? "" : "none";
+      });
+    });
+
+    function downloadPDF() {
+      const element = document.getElementById("report-content");
+      const opt = {
+        margin: 0.5,
+        filename: "Grocery_Vegetable_Report.pdf",
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in", format: "a3", orientation: "portrait" }
+      };
+
+      if (typeof html2pdf !== "undefined") {
+        html2pdf().set(opt).from(element).save();
+        return;
+      }
+
+      const printWindow = window.open("", "_blank");
+      const docHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Grocery & Vegetable Report</title>` +
+        `<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet"></head><body>${element.outerHTML}</body></html>`;
+      printWindow.document.open();
+      printWindow.document.write(docHtml);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 500);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Menu</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css') }}">
+    <style>
+        .meal-block {
+            margin-bottom: 16px;
+        }
+
+        .meal-title {
+            margin: 0 0 8px;
+            font-size: 23px;
+            text-align: center;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .editable {
+            background: #fffdf8;
+            outline: none;
+            cursor: text;
+        }
+
+        .editable:focus {
+            background: #f0fdfb;
+        }
+    </style>
+</head>
+<body class="admin-ui-body">
+    <div class="page-shell">
+        <div class="hero">
+            <h1>Weekly Menu Overview</h1>
+            <p>Inline edit any day value, then export as PDF or Excel</p>
+        </div>
+
+        <!-- Breakfast -->
+        <div class="panel panel-pad meal-block">
+            <h2 class="meal-title">Breakfast</h2>
+            {% if breakfast %}
+            <div class="table-shell">
+                <table class="table-modern">
+                    <tr>
+                        {% for col in breakfast[0].keys() %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for row in breakfast %}
+                    <tr>
+                        {% for col, value in row.items() %}
+                        {% if col != 'id' %}
+                        <td contenteditable="true" class="editable" data-meal="breakfast" data-id="{{ row.id }}" data-day="{{ col }}">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% else %}
+            <p class="muted-note">No breakfast data available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Lunch -->
+        <div class="panel panel-pad meal-block">
+            <h2 class="meal-title">Lunch</h2>
+            {% if lunch %}
+            <div class="table-shell">
+                <table class="table-modern">
+                    <tr>
+                        {% for col in lunch[0].keys() %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for row in lunch %}
+                    <tr>
+                        {% for col, value in row.items() %}
+                        {% if col != 'id' %}
+                        <td contenteditable="true" class="editable" data-meal="lunch" data-id="{{ row.id }}" data-day="{{ col }}">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% else %}
+            <p class="muted-note">No lunch data available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Dinner -->
+        <div class="panel panel-pad meal-block">
+            <h2 class="meal-title">Dinner</h2>
+            {% if dinner %}
+            <div class="table-shell">
+                <table class="table-modern">
+                    <tr>
+                        {% for col in dinner[0].keys() %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for row in dinner %}
+                    <tr>
+                        {% for col, value in row.items() %}
+                        {% if col != 'id' %}
+                        <td contenteditable="true" class="editable" data-meal="dinner" data-id="{{ row.id }}" data-day="{{ col }}">{{ value }}</td>
+                        {% else %}
+                        <td>{{ value }}</td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% else %}
+            <p class="muted-note">No dinner data available.</p>
+            {% endif %}
+        </div>
+
+        <div class="btn-row">
+            <button onclick="downloadPDF()" class="btn-pill">Download Menu as PDF</button>
+            <a href="/download_menu_excel" class="btn-pill blue">Download Menu as Excel</a>
+            <a href="/admin_dashboard" class="btn-pill gray">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll(".editable").forEach(cell => {
+            cell.addEventListener("input", function() {
+                const meal = this.dataset.meal;
+                const id = this.dataset.id;
+                const day = this.dataset.day;
+                const newValue = this.innerText.trim();
+
+                fetch("/update_menu", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ meal, id, day, new_value: newValue })
+                })
+                .then(response => response.json())
+                .then(data => console.log(data.message))
+                .catch(error => console.error("Error:", error));
+            });
+        });
+
+        function downloadPDF() {
+            window.location.href = "/download_menu_pdf";
+        }
+    </script>
+</body>
+</html>

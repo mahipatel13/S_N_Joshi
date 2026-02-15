@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css') }}">
+  <style>
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #0f172a, #1e293b);
+      color: #d6deef;
+      padding: 22px 14px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      transition: width 0.28s ease;
+      z-index: 30;
+      box-shadow: 6px 0 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar.collapsed {
+      width: 82px;
+    }
+
+    .sidebar-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 4px 8px;
+    }
+
+    .sidebar-head h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .sidebar-head p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #9fb1d4;
+    }
+
+    .toggle-btn {
+      cursor: pointer;
+      font-size: 18px;
+      color: #d6deef;
+      padding: 8px;
+      border-radius: 10px;
+      transition: background 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-list li {
+      margin-bottom: 8px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #d6deef;
+      padding: 12px 10px;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateX(2px);
+    }
+
+    .logout-link {
+      margin-top: 16px;
+      color: #fff;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+
+    .menu-text {
+      white-space: nowrap;
+    }
+
+    .sidebar.collapsed .menu-text,
+    .sidebar.collapsed .brand-text {
+      display: none;
+    }
+
+    .main {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      transition: margin-left 0.28s ease, width 0.28s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 26px;
+    }
+
+    .main.collapsed {
+      margin-left: 82px;
+      width: calc(100% - 82px);
+    }
+
+    .welcome-panel {
+      max-width: 880px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .welcome-panel h1 {
+      margin: 0;
+      font-size: clamp(32px, 4.2vw, 50px);
+      color: #0f172a;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .welcome-panel p {
+      margin: 12px 0 0;
+      color: #445168;
+      font-size: clamp(16px, 2vw, 21px);
+      font-weight: 500;
+    }
+
+    .welcome-subcards {
+      margin-top: 22px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 82px;
+      }
+
+      .menu-text,
+      .brand-text {
+        display: none;
+      }
+
+      .main {
+        margin-left: 82px;
+        width: calc(100% - 82px);
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body class="admin-ui-body">
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-head">
+        <div class="brand-text">
+          <h2>Admin</h2>
+          <p>{{ mess_name }}</p>
+        </div>
+        <i class="fas fa-bars toggle-btn" id="toggle-btn"></i>
+      </div>
+
+      <ul class="nav-list">
+        <li><a class="nav-link" href="{{ url_for('admin_dashboard') }}"><i class="fas fa-gauge-high"></i><span class="menu-text">Dashboard</span></a></li>
+        <li><a class="nav-link" href="{{ url_for('menu_dashboard') }}"><i class="fas fa-utensils"></i><span class="menu-text">Menu Management</span></a></li>
+        <li><a class="nav-link" href="{{ url_for('g_v') }}"><i class="fas fa-carrot"></i><span class="menu-text">Grocery & Vegetables</span></a></li>
+        <li><a class="nav-link logout-link" href="{{ url_for('logout') }}"><i class="fas fa-right-from-bracket"></i><span class="menu-text">Logout</span></a></li>
+      </ul>
+    </aside>
+
+    <main class="main" id="main-content">
+      <div class="panel panel-pad welcome-panel">
+        <h1>Welcome to {{ mess_name }}</h1>
+        <p>Admin Management System - Manage Menu, Grocery & Vegetables</p>
+
+        <div class="action-grid welcome-subcards">
+          <div class="action-card" onclick="window.location.href='{{ url_for('menu_dashboard') }}'">
+            <h3>Menu Management</h3>
+            <p>Add, update, and review the weekly menu with clean workflows.</p>
+          </div>
+          <div class="action-card alt" onclick="window.location.href='{{ url_for('g_v') }}'">
+            <h3>Grocery Tracking</h3>
+            <p>Record daily grocery and vegetable details with better visibility.</p>
+          </div>
+          <div class="action-card warn" onclick="window.location.href='{{ url_for('menu_show') }}'">
+            <h3>Today Menu View</h3>
+            <p>Quickly verify what is scheduled for breakfast, lunch, and dinner.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById("toggle-btn");
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("main-content");
+
+    toggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      mainContent.classList.toggle("collapsed");
+    });
+  </script>
+</body>
+</html>

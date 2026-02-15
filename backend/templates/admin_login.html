@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+        .login-wrap {
+            width: 100%;
+            max-width: 460px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .login-brand {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .login-brand h1 {
+            color: #111111;
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.05;
+            text-shadow: none;
+            letter-spacing: 0.5px;
+        }
+
+        .login-brand p {
+            color: #111111;
+            font-size: 36px;
+            font-weight: 500;
+            margin-top: 6px;
+            text-shadow: none;
+        }
+
+        .form {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+
+        .input-container {
+            width: 100%;
+        }
+
+        .input-container input {
+            width: 100% !important;
+            display: block;
+            color: #ffffff !important;
+        }
+
+        .input-container input::placeholder {
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        @media (max-width: 768px) {
+            .login-wrap {
+                max-width: 92%;
+            }
+
+            .login-brand h1 {
+                font-size: 40px;
+            }
+
+            .login-brand p {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-wrap">
+        <div class="login-brand">
+            <h1>{{ mess_name }}</h1>
+            <p>Admin Management System</p>
+        </div>
+
+        <form class="form" method="POST">
+            <p class="form-title">Sign in to admin account</p>
+            
+            {% if error %}
+            <div style="background-color: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #f5c6cb;">
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <!-- Phone Number input -->
+            <div class="input-container">
+                <input
+                    type="tel"
+                    id="phone_no"
+                    name="phone_no"
+                    placeholder="Enter 10-digit Phone No"
+                    inputmode="numeric"
+                    maxlength="10"
+                    autocomplete="off"
+                    title="Phone number must be exactly 10 digits"
+                    required
+                />
+            </div>
+
+            <!-- Password input -->
+            <div class="input-container">
+                <input type="password" name="password" placeholder="Enter Password" required />
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit" class="submit">Sign in</button>
+        </form>
+    </div>
+
+    <script>
+        const phoneInput = document.getElementById("phone_no");
+        if (phoneInput) {
+            phoneInput.addEventListener("input", function () {
+                this.value = this.value.replace(/\D/g, "").slice(0, 10);
+            });
+            phoneInput.addEventListener("blur", function () {
+                if (this.value.length > 0 && this.value.length !== 10) {
+                    this.setCustomValidity("Phone number must be exactly 10 digits");
+                } else {
+                    this.setCustomValidity("");
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

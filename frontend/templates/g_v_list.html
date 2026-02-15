@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery & Vegetable Entry</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css') }}">
+  <style>
+    .top-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .top-controls label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #334155;
+      display: block;
+    }
+
+    textarea.form-control-modern {
+      min-height: 76px;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body class="admin-ui-body">
+  <div class="page-shell">
+    <div class="hero">
+      <h1>Grocery & Vegetable Entry</h1>
+      <p>Fill daily records meal-wise with consistent inputs</p>
+    </div>
+
+    <form class="panel panel-pad" action="/g_v_list" method="post">
+      <div class="top-controls">
+        <div>
+          <label for="meal_selector">Select Meal Type</label>
+          <select name="meal_type" id="meal_selector" class="form-control-modern" onchange="loadMealData()" required>
+            <option value="">-- Choose Meal --</option>
+            <option value="breakfast" {% if meal_type == 'breakfast' %}selected{% endif %}>Breakfast</option>
+            <option value="lunch" {% if meal_type == 'lunch' %}selected{% endif %}>Lunch</option>
+            <option value="dinner" {% if meal_type == 'dinner' %}selected{% endif %}>Dinner</option>
+          </select>
+        </div>
+        <div>
+          <label for="person">Number of Persons</label>
+          <input type="text" name="person" id="person" class="form-control-modern" required>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>Meal Name</th>
+              <th>Menu Item</th>
+              <th>Grocery</th>
+              <th>Vegetable</th>
+              <th>Khana Bacha</th>
+              <th>Khana Ghata</th>
+              <th>Remark</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="meal_table">
+            {% for item in menu_items %}
+            <tr>
+              <td>
+                {{ meal_type.capitalize() }}
+                <input type="hidden" name="meal_name[]" value="{{ meal_type }}">
+              </td>
+              <td><textarea name="menu_item[]" class="form-control-modern" readonly>{{ item }}</textarea></td>
+              <td><textarea name="grocery[]" class="form-control-modern"></textarea></td>
+              <td><textarea name="vegetable[]" class="form-control-modern"></textarea></td>
+              <td><textarea name="khanabcha[]" class="form-control-modern"></textarea></td>
+              <td><textarea name="khanaghata[]" class="form-control-modern"></textarea></td>
+              <td><textarea name="remark[]" class="form-control-modern"></textarea></td>
+              <td><button type="button" class="btn-pill gray" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+            {% endfor %}
+
+            <tr id="new-row-template" style="display:none;">
+              <td><input type="text" name="meal_name[]" class="form-control-modern" placeholder="Meal name"></td>
+              <td><textarea name="menu_item[]" class="form-control-modern" placeholder="Menu item"></textarea></td>
+              <td><textarea name="grocery[]" class="form-control-modern" placeholder="Grocery"></textarea></td>
+              <td><textarea name="vegetable[]" class="form-control-modern" placeholder="Vegetable"></textarea></td>
+              <td><textarea name="khanabcha[]" class="form-control-modern" placeholder="Khana Bacha"></textarea></td>
+              <td><textarea name="khanaghata[]" class="form-control-modern" placeholder="Khana Ghata"></textarea></td>
+              <td><textarea name="remark[]" class="form-control-modern" placeholder="Remark"></textarea></td>
+              <td><button type="button" class="btn-pill gray" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" class="btn-pill blue" onclick="addRow()">Add Entry</button>
+        <button type="submit" class="btn-pill">Submit</button>
+        <a href="/admin_dashboard" class="btn-pill gray">Back to Dashboard</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function loadMealData() {
+      const selectedMeal = document.getElementById("meal_selector").value;
+      if (selectedMeal) {
+        window.location.href = `/g_v_list?meal_type=${selectedMeal}`;
+      }
+    }
+
+    function addRow() {
+      const template = document.getElementById("new-row-template");
+      const clone = template.cloneNode(true);
+      clone.style.display = "";
+      clone.removeAttribute("id");
+      clone.querySelectorAll("textarea, input").forEach(el => el.removeAttribute("readonly"));
+      document.getElementById("meal_table").appendChild(clone);
+    }
+
+    function removeRow(btn) {
+      const tr = btn.closest("tr");
+      if (tr) tr.remove();
+    }
+  </script>
+</body>
+</html>

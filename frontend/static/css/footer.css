@@ -1,0 +1,30 @@
+/* Basic Footer Styles */
+footer {
+    background-color: rgba(0, 0, 0, 0.52); /* Adjusted opacity */
+    color: white;
+    position: fixed; /* Fixed to stay at the bottom */
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+/* Footer Links */
+footer a {
+    color: #f8b400;
+    text-decoration: none;
+    margin: 0 5px; /* Adjusted margin */
+    transition: color 0.3s ease-in-out;
+}
+
+footer a:hover {
+    color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    footer {
+        padding: 15px;
+        font-size: 14px;
+    }
+}
