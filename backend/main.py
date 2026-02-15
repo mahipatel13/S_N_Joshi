@@ -57,6 +57,24 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         return None
 
+
+@app.after_request
+def set_security_headers(response):
+    """
+    Set CSP compatible with current templates/assets.
+    Includes 'unsafe-eval' to avoid runtime breaks from third-party scripts.
+    """
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://checkout.razorpay.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https:; "
+        "frame-src 'self' https://checkout.razorpay.com;"
+    )
+    return response
+
 @app.route('/')
 def home():
     return redirect(url_for('adminlogin'))
