@@ -34,11 +34,11 @@ MESS_NAME = "S. N. Joshi. Mess"
 
 # Database configuration (environment-aware)
 DB_CONFIG = {
-    'host': os.environ.get('DB_HOST', 'localhost'),
+    'host': os.environ.get('DB_HOST', 'mysql.railway.internal'),
     'port': int(os.environ.get('DB_PORT', 3306)),
     'user': os.environ.get('DB_USER', 'root'),
-    'password': os.environ.get('DB_PASSWORD', ''),
-    'db': os.environ.get('DB_NAME', 'track_serve'),
+    'password': os.environ.get('DB_PASSWORD', 'DSOBtUSguvGvuhXovxjhcEbNTVFoUbBh'),
+    'db': os.environ.get('DB_NAME', 'railway'),
 }
 
 # Function to connect to MySQL
