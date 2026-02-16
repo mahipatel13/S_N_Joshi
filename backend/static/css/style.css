@@ -389,14 +389,17 @@ body {
     justify-content: center;  /* Center horizontally */
     align-items: center;      /* Center vertically */
     height: 100vh;            /* Full viewport height */
+    width: 100vw;
+    max-width: 100%;
     margin: 0;                /* Remove default margin */
+    overflow-x: hidden;
     background-color: #f8f9fa; /* Light background (optional) */
 }
 
 .form {
     background-color: #00000085;
     padding: 1rem;
-    margin-left: 70px;
+    margin-left: 0;
     max-width: 400px;  /* Add 'px' unit */
     width: 100%;      /* Ensures responsiveness */
     border-radius: 0.5rem;
