@@ -1,7 +1,7 @@
 import pymysql
 
 NEW_PW = 'SNJoshi@123'
-PHONE = '7862017545'
+PHONE = '8511895498'
 
 conn = pymysql.connect(host='localhost', port=3306, user='root', password='', db='track_serve')
 cur = conn.cursor()

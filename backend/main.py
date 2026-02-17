@@ -34,11 +34,11 @@ MESS_NAME = "S. N. Joshi. Mess"
 
 # Database configuration (environment-aware)
 DB_CONFIG = {
-    'host': os.environ.get('DB_HOST', 'mysql.railway.internal'),
+    'host': os.environ.get('DB_HOST', 'localhost'),
     'port': int(os.environ.get('DB_PORT', 3306)),
     'user': os.environ.get('DB_USER', 'root'),
-    'password': os.environ.get('DB_PASSWORD', 'DSOBtUSguvGvuhXovxjhcEbNTVFoUbBh'),
-    'db': os.environ.get('DB_NAME', 'railway'),
+    'password': os.environ.get('DB_PASSWORD', ''),
+    'db': os.environ.get('DB_NAME', 'track_serve'),
 }
 
 # Function to connect to MySQL
@@ -57,27 +57,18 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         return None
 
-
-@app.after_request
-def set_security_headers(response):
-    """
-    Set CSP compatible with current templates/assets.
-    Includes 'unsafe-eval' to avoid runtime breaks from third-party scripts.
-    """
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://checkout.razorpay.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
-        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
-        "img-src 'self' data: https:; "
-        "connect-src 'self' https:; "
-        "frame-src 'self' https://checkout.razorpay.com;"
-    )
-    return response
-
 @app.route('/')
 def home():
     return redirect(url_for('adminlogin'))
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok"}), 200
+
+@app.route('/favicon.ico')
+def favicon():
+    # Serve an existing static image so browser favicon requests don't 404.
+    return redirect(url_for('static', filename='images/pari_1.png'))
 
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
@@ -343,8 +334,11 @@ def fetch_weekly_data():
             if not date_range:
                 return None, [], [], []
 
-            from_date = date_range["FROM_DATE"]
-            to_date = date_range["TO_DATE"]
+            from_date = date_range.get("FROM_DATE") or date_range.get("from_date")
+            to_date = date_range.get("TO_DATE") or date_range.get("to_date")
+
+            if not from_date or not to_date:
+                return None, [], [], []
 
             cursor.execute(
                 "SELECT * FROM breakfast WHERE FROM_DATE = %s AND TO_DATE = %s ORDER BY id DESC",
@@ -388,8 +382,6 @@ class CustomPDF(FPDF):
 
 # Function to Generate PDF
 def generate_pdf_menu(from_date, meals):
-    file_name = f"{from_date}_Menu.pdf"
-    
     pdf = CustomPDF(orientation="L", unit="mm", format="A4")
     pdf.set_auto_page_break(auto=True, margin=10)
     pdf.add_page()
@@ -413,6 +405,8 @@ def generate_pdf_menu(from_date, meals):
         if value is None:
             return ""
         text = str(value).replace("\r\n", "\n").replace("\r", "\n")
+        # FPDF (core fonts) supports latin-1 only. Replace unsupported chars safely.
+        text = text.encode("latin-1", "replace").decode("latin-1")
         cleaned_lines = []
         for line in text.split("\n"):
             compact = " ".join(line.split())
@@ -485,8 +479,8 @@ def generate_pdf_menu(from_date, meals):
             continue
         add_meal_row(meal_type, meal_data)
 
-    pdf.output(file_name)
-    return file_name
+    pdf_bytes = pdf.output(dest="S").encode("latin-1")
+    return _BytesIO(pdf_bytes)
 
 # Function to Extract Meal Data
 def extract_meal_data(meal_data):
@@ -509,24 +503,29 @@ def extract_meal_data(meal_data):
 def download_menu_pdf():
     if 'logged_in' not in session:
         return redirect(url_for('adminlogin'))
-        
-    date_range, breakfast, lunch, dinner = fetch_weekly_data()
 
-    if not date_range:
-        return jsonify({"error": "No data found for the current week"}), 404
+    try:
+        date_range, breakfast, lunch, dinner = fetch_weekly_data()
 
-    from_date = str(date_range["FROM_DATE"])
+        if not date_range:
+            return jsonify({"error": "No data found for the current week"}), 404
 
-    print(f"Generating PDF for: {from_date}")
+        from_date = str(date_range.get("FROM_DATE") or date_range.get("from_date") or "").strip()
+        safe_date = "".join(ch if ch.isalnum() or ch in ("-", "_") else "_" for ch in from_date) or "weekly_menu"
 
-    meals = {
-        "Breakfast": extract_meal_data(breakfast),
-        "Lunch": extract_meal_data(lunch),
-        "Dinner": extract_meal_data(dinner),
-    }
+        meals = {
+            "Breakfast": extract_meal_data(breakfast),
+            "Lunch": extract_meal_data(lunch),
+            "Dinner": extract_meal_data(dinner),
+        }
 
-    pdf_file = generate_pdf_menu(from_date, meals)
-    return send_file(pdf_file, as_attachment=True)
+        pdf_buffer = generate_pdf_menu(from_date or safe_date, meals)
+        pdf_buffer.seek(0)
+        filename = f"{safe_date}_Menu.pdf"
+        return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype="application/pdf")
+    except Exception as e:
+        app.logger.exception("PDF download failed: %s", e)
+        return jsonify({"error": "Failed to generate PDF. Please try again."}), 500
 
 
 @app.route('/download_menu_excel', methods=['GET'])
@@ -552,8 +551,31 @@ def download_menu_excel():
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Weekly Menu')
     output.seek(0)
-    filename = f"weekly_menu_{str(date_range.get('FROM_DATE',''))}.xlsx"
+    from_date = str(date_range.get("FROM_DATE") or date_range.get("from_date") or "")
+    filename = f"weekly_menu_{from_date}.xlsx" if from_date else "weekly_menu.xlsx"
     return send_file(output, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+def fetch_gv_rows():
+    conn = get_db_connection()
+    if not conn:
+        return []
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, date_day, meal_type, menu_item, person, grocery, vegetable, khanabcha, khanaghata, remark
+                FROM grocery_vegetable_management
+                ORDER BY date_day DESC, id DESC
+                """
+            )
+            return cursor.fetchall()
+    except Exception as e:
+        app.logger.exception("Failed to fetch grocery report data: %s", e)
+        return []
+    finally:
+        conn.close()
 
 
 @app.route('/download_gv_excel', methods=['GET'])
@@ -561,23 +583,156 @@ def download_gv_excel():
     if 'logged_in' not in session:
         return redirect(url_for('adminlogin'))
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id, date_day, meal_type, menu_item, person, grocery, vegetable, khanabcha, khanaghata, remark FROM grocery_vegetable_management ORDER BY date_day DESC")
-    rows = cursor.fetchall()
-    conn.close()
+    rows = fetch_gv_rows()
 
     # Normalize rows into DataFrame
-    df = pd.DataFrame(rows)
-    if df.empty:
+    if not rows:
         return jsonify({"error": "No grocery/vegetable data found"}), 404
+
+    formatted_rows = []
+    for row in rows:
+        row_date = row.get("date_day")
+        if isinstance(row_date, datetime):
+            date_str = row_date.strftime("%Y-%m-%d")
+            day_str = row_date.strftime("%A")
+        elif isinstance(row_date, date):
+            date_str = row_date.strftime("%Y-%m-%d")
+            day_str = row_date.strftime("%A")
+        else:
+            date_str = str(row_date) if row_date else ""
+            day_str = ""
+
+        formatted_rows.append(
+            {
+                "Date": date_str,
+                "Day": day_str,
+                "Meal Type": row.get("meal_type", ""),
+                "Menu": row.get("menu_item", ""),
+                "Person": row.get("person", ""),
+                "Grocery": row.get("grocery", ""),
+                "Vegetable": row.get("vegetable", ""),
+                "Khana Bacha": row.get("khanabcha", ""),
+                "Khana Ghata": row.get("khanaghata", ""),
+                "Remark": row.get("remark", ""),
+            }
+        )
+
+    df = pd.DataFrame(formatted_rows)
 
     output = _BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Grocery_Vegetable_Report')
     output.seek(0)
-    filename = f"grocery_vegetable_report.xlsx"
+    filename = f"grocery_vegetable_report_{datetime.today().strftime('%Y-%m-%d')}.xlsx"
     return send_file(output, as_attachment=True, download_name=filename, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+@app.route('/download_gv_pdf', methods=['GET'])
+def download_gv_pdf():
+    if 'logged_in' not in session:
+        return redirect(url_for('adminlogin'))
+
+    try:
+        rows = fetch_gv_rows()
+        if not rows:
+            return jsonify({"error": "No grocery/vegetable data found"}), 404
+
+        pdf = CustomPDF(orientation="L", unit="mm", format="A4")
+        pdf.set_auto_page_break(auto=True, margin=10)
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 12)
+        pdf.cell(0, 10, "Grocery & Vegetable Report", ln=True, align="C")
+        pdf.ln(2)
+
+        headers = ["Date", "Day", "Meal", "Menu", "Person", "Grocery", "Vegetable", "Khana Bacha", "Khana Ghata", "Remark"]
+        widths = [20, 16, 16, 52, 18, 30, 30, 24, 24, 24]
+
+        def clean_text(value):
+            text = "" if value is None else str(value)
+            return text.encode("latin-1", "replace").decode("latin-1")
+
+        def wrap_text(text, width):
+            text = clean_text(text).replace("\r\n", "\n").replace("\r", "\n")
+            max_width = width - 2
+            lines = []
+            for paragraph in text.split("\n"):
+                words = paragraph.split()
+                if not words:
+                    lines.append("")
+                    continue
+                line = words[0]
+                for word in words[1:]:
+                    candidate = f"{line} {word}"
+                    if pdf.get_string_width(candidate) <= max_width:
+                        line = candidate
+                    else:
+                        lines.append(line)
+                        line = word
+                lines.append(line)
+            return lines if lines else [""]
+
+        def draw_header():
+            pdf.set_font("Arial", "B", 9)
+            for idx, header in enumerate(headers):
+                pdf.cell(widths[idx], 8, header, border=1, align="C")
+            pdf.ln()
+
+        draw_header()
+        pdf.set_font("Arial", size=8)
+        line_height = 5
+
+        for row in rows:
+            row_date = row.get("date_day")
+            if isinstance(row_date, (datetime, date)):
+                date_str = row_date.strftime("%Y-%m-%d")
+                day_str = row_date.strftime("%A")
+            else:
+                date_str = str(row_date) if row_date else ""
+                day_str = ""
+
+            values = [
+                date_str,
+                day_str,
+                row.get("meal_type", ""),
+                row.get("menu_item", ""),
+                row.get("person", ""),
+                row.get("grocery", ""),
+                row.get("vegetable", ""),
+                row.get("khanabcha", ""),
+                row.get("khanaghata", ""),
+                row.get("remark", ""),
+            ]
+
+            wrapped_cells = [wrap_text(values[i], widths[i]) for i in range(len(values))]
+            row_height = max(len(cell) for cell in wrapped_cells) * line_height + 2
+
+            if pdf.get_y() + row_height > (pdf.h - pdf.b_margin):
+                pdf.add_page()
+                draw_header()
+                pdf.set_font("Arial", size=8)
+
+            x_start = pdf.get_x()
+            y_start = pdf.get_y()
+
+            for idx, lines in enumerate(wrapped_cells):
+                x = x_start + sum(widths[:idx])
+                width = widths[idx]
+                pdf.rect(x, y_start, width, row_height)
+
+                for line_idx, line in enumerate(lines):
+                    pdf.set_xy(x + 1, y_start + 1 + line_idx * line_height)
+                    pdf.cell(width - 2, line_height, clean_text(line), border=0, align="L")
+
+            pdf.set_xy(x_start, y_start + row_height)
+
+        pdf_bytes = pdf.output(dest="S").encode("latin-1")
+        output = _BytesIO(pdf_bytes)
+        output.seek(0)
+        filename = f"grocery_vegetable_report_{datetime.today().strftime('%Y-%m-%d')}.pdf"
+        return send_file(output, as_attachment=True, download_name=filename, mimetype="application/pdf")
+    except Exception as e:
+        app.logger.exception("GV PDF download failed: %s", e)
+        return jsonify({"error": "Failed to generate grocery report PDF. Please try again."}), 500
 
 # Fetch all menu data for deletion
 @app.route('/delete_menu', methods=['GET'])
@@ -717,19 +872,25 @@ def g_v_list():
 def g_v_report():
     if 'logged_in' not in session:
         return redirect(url_for('adminlogin'))
-        
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM grocery_vegetable_management")
-    rows = cursor.fetchall()
-    conn.close()
+
+    rows = fetch_gv_rows()
 
     grouped_data = defaultdict(list)
 
     for row in rows:
-        date = row['date_day']
+        row_date = row.get('date_day')
+        if isinstance(row_date, datetime):
+            date_value = row_date.date()
+            day_value = row_date.strftime("%A")
+        elif isinstance(row_date, date):
+            date_value = row_date
+            day_value = row_date.strftime("%A")
+        else:
+            date_value = row_date
+            day_value = ""
+
         meal_type = row['meal_type']
-        key = (date, meal_type)
+        key = (date_value, meal_type)
         grouped_data[key].append({
             'menu_item': row['menu_item'],
             'person': row['person'],
@@ -739,8 +900,8 @@ def g_v_report():
             'khanaghata': row['khanaghata'],
             'remark': row['remark'],
             'id': row.get('id') if isinstance(row, dict) else row['id'],
-            'day': date.strftime("%A"),
-            'date_str': date.strftime("%d-%m-%Y")
+            'day': day_value,
+            'date_str': date_value.strftime("%d-%m-%Y") if isinstance(date_value, date) else str(date_value)
         })
 
     sorted_grouped_data = OrderedDict(sorted(grouped_data.items(), key=lambda x: x[0][0], reverse=True))

@@ -7,6 +7,18 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_ui.css') }}">
   <style>
+    :root {
+      --dash-sidebar-top: #0b3a44;
+      --dash-sidebar-bottom: #1b4d63;
+      --dash-text: #ecf7fb;
+      --dash-muted: #b9d7e3;
+      --dash-hover: rgba(255, 255, 255, 0.18);
+      --dash-heading: #0f2b3b;
+      --dash-sub: #35566b;
+      --dash-logout-top: #ef4444;
+      --dash-logout-bottom: #dc2626;
+    }
+
     .layout {
       display: flex;
       min-height: 100vh;
@@ -14,8 +26,8 @@
 
     .sidebar {
       width: 250px;
-      background: linear-gradient(180deg, #0f172a, #1e293b);
-      color: #d6deef;
+      background: linear-gradient(180deg, var(--dash-sidebar-top), var(--dash-sidebar-bottom));
+      color: var(--dash-text);
       padding: 22px 14px;
       position: fixed;
       left: 0;
@@ -42,26 +54,26 @@
     .sidebar-head h2 {
       margin: 0;
       font-size: 20px;
-      color: #fff;
+      color: var(--dash-text);
     }
 
     .sidebar-head p {
       margin: 4px 0 0;
       font-size: 12px;
-      color: #9fb1d4;
+      color: var(--dash-muted);
     }
 
     .toggle-btn {
       cursor: pointer;
       font-size: 18px;
-      color: #d6deef;
+      color: var(--dash-text);
       padding: 8px;
       border-radius: 10px;
       transition: background 0.2s ease;
     }
 
     .toggle-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--dash-hover);
     }
 
     .nav-list {
@@ -79,7 +91,7 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
-      color: #d6deef;
+      color: var(--dash-text);
       padding: 12px 10px;
       border-radius: 10px;
       font-weight: 500;
@@ -87,14 +99,14 @@
     }
 
     .nav-link:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: var(--dash-hover);
       transform: translateX(2px);
     }
 
     .logout-link {
       margin-top: 16px;
       color: #fff;
-      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      background: linear-gradient(135deg, var(--dash-logout-top), var(--dash-logout-bottom));
     }
 
     .menu-text {
@@ -130,14 +142,14 @@
     .welcome-panel h1 {
       margin: 0;
       font-size: clamp(32px, 4.2vw, 50px);
-      color: #0f172a;
+      color: var(--dash-heading);
       line-height: 1.12;
       font-weight: 800;
     }
 
     .welcome-panel p {
       margin: 12px 0 0;
-      color: #445168;
+      color: var(--dash-sub);
       font-size: clamp(16px, 2vw, 21px);
       font-weight: 500;
     }
@@ -189,18 +201,18 @@
         <p>Admin Management System - Manage Menu, Grocery & Vegetables</p>
 
         <div class="action-grid welcome-subcards">
-          <div class="action-card" onclick="window.location.href='{{ url_for('menu_dashboard') }}'">
+          <a href="{{ url_for('menu_dashboard') }}" class="action-card">
             <h3>Menu Management</h3>
             <p>Add, update, and review the weekly menu with clean workflows.</p>
-          </div>
-          <div class="action-card alt" onclick="window.location.href='{{ url_for('g_v') }}'">
+          </a>
+          <a href="{{ url_for('g_v') }}" class="action-card alt">
             <h3>Grocery Tracking</h3>
             <p>Record daily grocery and vegetable details with better visibility.</p>
-          </div>
-          <div class="action-card warn" onclick="window.location.href='{{ url_for('menu_show') }}'">
+          </a>
+          <a href="{{ url_for('menu_show') }}" class="action-card warn">
             <h3>Today Menu View</h3>
             <p>Quickly verify what is scheduled for breakfast, lunch, and dinner.</p>
-          </div>
+          </a>
         </div>
       </div>
     </main>

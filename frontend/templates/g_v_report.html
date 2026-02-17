@@ -33,14 +33,14 @@
     </div>
 
     <div class="btn-row">
-      <button class="btn-pill" onclick="downloadPDF()">Download Report as PDF</button>
+      <a href="/download_gv_pdf" class="btn-pill">Download Report as PDF</a>
       <a href="/download_gv_excel" class="btn-pill blue">Download Report as Excel</a>
       <a href="/admin_dashboard" class="btn-pill gray">Back to Dashboard</a>
     </div>
 
     {% for (date, meal), items in grouped_data.items() %}
     <section class="panel panel-pad" style="margin-top: 14px;">
-      <h3 class="table-title">{{ meal|capitalize }} - {{ date }} ({{ items[0].day }})</h3>
+      <h3 class="table-title">{{ meal|capitalize }} - {{ items[0].date_str }} ({{ items[0].day }})</h3>
       <div class="table-shell">
         <table class="table-modern search-table">
           <thead>
@@ -94,30 +94,6 @@
       });
     });
 
-    function downloadPDF() {
-      const element = document.getElementById("report-content");
-      const opt = {
-        margin: 0.5,
-        filename: "Grocery_Vegetable_Report.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in", format: "a3", orientation: "portrait" }
-      };
-
-      if (typeof html2pdf !== "undefined") {
-        html2pdf().set(opt).from(element).save();
-        return;
-      }
-
-      const printWindow = window.open("", "_blank");
-      const docHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Grocery & Vegetable Report</title>` +
-        `<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet"></head><body>${element.outerHTML}</body></html>`;
-      printWindow.document.open();
-      printWindow.document.write(docHtml);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 500);
-    }
   </script>
 </body>
 </html>

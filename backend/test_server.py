@@ -23,7 +23,7 @@ try:
         print("✓ Server is running successfully on http://localhost:8080")
         print("✓ Admin login page is accessible")
         print("\n=== Admin Credentials ===")
-        print("Phone: 7862017545")
+        print("Phone: 8511895498")
         print("Password: (Check your existing admin password)")
         print("\nServer is now running. Press Ctrl+C to stop.")
         

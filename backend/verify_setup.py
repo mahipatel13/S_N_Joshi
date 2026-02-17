@@ -39,4 +39,4 @@ except Exception as e:
 
 # UPDATE track_serve.admin
 # SET password = 'SNJoshi@123'
-# WHERE phone_no = '7862017545';
+# WHERE phone_no = '8511895498';

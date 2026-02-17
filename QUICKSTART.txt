@@ -61,8 +61,8 @@ MESS_NAME = "S. N. Joshi. Mess"
 ### 5. ✅ Set Admin Credentials
 **Configured Admin User:**
 ```
-Phone:     7862017545
-Name:      Gajera Prince Laxmanbhai
+Phone:     8511895498
+Name:      Mahi Patel
 Email:     (In database)
 Password:  (Existing password maintained)
 ```
@@ -85,7 +85,7 @@ python main.py
 ### **Then:**
 1. Open browser: `http://localhost:8080`
 2. Login with:
-   - **Phone:** 7862017545
+   - **Phone:** 8511895498
    - **Password:** (Your admin password)
 
 ---
@@ -187,8 +187,8 @@ Features:
 
 **Admin User:** ✅ (Already configured)
 ```
-✓ Phone:       7862017545
-✓ Name:        Gajera Prince Laxmanbhai
+✓ Phone:       8511895498
+✓ Name:        Mahi Patel
 ✓ Active:      Yes
 ✓ Password:    (Maintained from original)
 ```
@@ -232,7 +232,7 @@ qrcode
 **KEEP THIS SAFE:**
 ```
 ═════════════════════════════════════
-Phone:    7862017545
+Phone:    8511895498
 Password: (Your existing password)
 ═════════════════════════════════════
 ```

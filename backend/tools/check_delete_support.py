@@ -1,6 +1,6 @@
 import requests
 
-LOGIN = {'phone_no':'7862017545','password':'SNJoshi@123'}
+LOGIN = {'phone_no':'8511895498','password':'SNJoshi@123'}
 BASE = 'http://localhost:8080'
 
 s = requests.Session()
