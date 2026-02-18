@@ -31,13 +31,14 @@ ACTIVE_SESSIONS = {}
 
 # Mess Name
 MESS_NAME = "S. N. Joshi. Mess"
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'SNJoshi_admin')
 
 # Database configuration (environment-aware)
 DB_CONFIG = {
     'host': os.environ.get('DB_HOST', 'localhost'),
     'port': int(os.environ.get('DB_PORT', 3306)),
-    'user': os.environ.get('DB_USER', 'root'),
-    'password': os.environ.get('DB_PASSWORD', ''),
+    'user': os.environ.get('DB_USER', 'SNJoshi'),
+    'password': os.environ.get('DB_PASSWORD', 'SNJoshi@123'),
     'db': os.environ.get('DB_NAME', 'track_serve'),
 }
 
@@ -53,7 +54,7 @@ def get_db_connection():
             cursorclass=pymysql.cursors.DictCursor
         )
         return connection
-    except pymysql.MySQLError as e:
+    except (pymysql.MySQLError, RuntimeError) as e:
         print(f"Error connecting to MySQL: {e}")
         return None
 
@@ -73,24 +74,36 @@ def favicon():
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
     if request.method == 'POST':
-        phone_no = request.form['phone_no'].strip()
-        password = request.form['password']
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
 
-        # Enforce 10-digit numeric phone number on server side
-        if not phone_no.isdigit() or len(phone_no) != 10:
-            return render_template('admin_login.html', error="Phone number must be exactly 10 digits", mess_name=MESS_NAME)
+        if not username:
+            return render_template(
+                'admin_login.html',
+                error="Username is required",
+                mess_name=MESS_NAME,
+                admin_username=ADMIN_USERNAME,
+            )
+
+        if username != ADMIN_USERNAME:
+            return render_template(
+                'admin_login.html',
+                error="Invalid username or password",
+                mess_name=MESS_NAME,
+                admin_username=ADMIN_USERNAME,
+            )
 
         connection = get_db_connection()
         if connection:
             try:
                 cursor = connection.cursor()
-                query = "SELECT * FROM admin WHERE phone_no = %s AND password = %s"
-                cursor.execute(query, (phone_no, password))
+                query = "SELECT * FROM admin WHERE password = %s LIMIT 1"
+                cursor.execute(query, (password,))
                 user = cursor.fetchone()
 
                 if user:
                     # Check if this admin is already logged in elsewhere
-                    admin_id = user['id'] if 'id' in user else phone_no
+                    admin_id = user['id'] if 'id' in user else ADMIN_USERNAME
                     
                     # If already logged in, logout the previous session
                     if admin_id in ACTIVE_SESSIONS:
@@ -103,25 +116,40 @@ def adminlogin():
                     ACTIVE_SESSIONS[admin_id] = session_id
                     
                     session['admin_id'] = admin_id
-                    session['phone_no'] = phone_no
+                    session['username'] = username
                     session['session_id'] = session_id
                     session['logged_in'] = True
                     
                     flash("Login successful! Welcome to S. N. Joshi. Mess", "success")
                     return redirect(url_for('admin_dashboard'))
                 else:
-                    return render_template('admin_login.html', error="Invalid phone number or password")
+                    return render_template(
+                        'admin_login.html',
+                        error="Invalid username or password",
+                        mess_name=MESS_NAME,
+                        admin_username=ADMIN_USERNAME,
+                    )
 
             except pymysql.MySQLError as e:
                 print(f"Database error: {e}")
-                return render_template('admin_login.html', error="Error while checking credentials")
+                return render_template(
+                    'admin_login.html',
+                    error="Error while checking credentials",
+                    mess_name=MESS_NAME,
+                    admin_username=ADMIN_USERNAME,
+                )
             finally:
                 cursor.close()
                 connection.close()
         else:
-            return render_template('admin_login.html', error="Failed to connect to the database")
+            return render_template(
+                'admin_login.html',
+                error="Failed to connect to the database",
+                mess_name=MESS_NAME,
+                admin_username=ADMIN_USERNAME,
+            )
 
-    return render_template('admin_login.html', mess_name=MESS_NAME)
+    return render_template('admin_login.html', mess_name=MESS_NAME, admin_username=ADMIN_USERNAME)
 
 @app.before_request
 def check_session():

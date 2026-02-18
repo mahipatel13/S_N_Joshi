@@ -363,7 +363,6 @@ python main.py
 
 1. **Run:** `python main.py`
 2. **Access:** http://localhost:8080
-3. **Login:** 7862017545 (phone number)
 4. **Manage:** Menus and Grocery/Vegetables
 
 **Questions?** Check README.md or CHANGES.txt for details.

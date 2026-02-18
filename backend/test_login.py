@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 s = requests.Session()
 login_url = 'http://localhost:8080/adminlogin'
-cred = {'phone_no':'8511895498','password':'SNJoshi@123'}
+cred = {'username':'SNJoshi_admin','password':'SNJoshi@123'}
 
 r = s.post(login_url, data=cred, allow_redirects=True, timeout=10)
 print('Login POST status:', r.status_code)
